@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  version: 1.0.0
+  title: example
+
+paths:
+  '/test':
+    get:
+      operationId: test
+      responses:
+        '200':
+          $ref: '#/components/responses/TestResponse'
+
+components:
+  schemas:
+    Parent:
+      type: object
+      description: parent object
+      properties:
+        name:
+          type: string
+          description: object name
+    Child:
+      allOf:
+        - $ref: '#/components/schemas/Parent'
+        - type: object
+          properties:
+            code:
+              type: integer
+              description: response code
+
+  responses:
+    TestResponse:
+      description: test response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Child'

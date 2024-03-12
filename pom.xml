@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>example</groupId>
+  <artifactId>micronaut-codegen-example</artifactId>
+  <version>1.0.0</version>
+
+  <parent>
+    <groupId>io.micronaut.platform</groupId>
+    <artifactId>micronaut-parent</artifactId>
+    <version>4.2.3</version>
+  </parent>
+
+  <properties>
+    <jdk.version>17</jdk.version>
+    <release.version>${jdk.version}</release.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <jackson.version>2.16.2</jackson.version>
+    <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+    <open.api.version>7.1.0</open.api.version>
+    <openapi.codegen.version>4.2.0</openapi.codegen.version>
+    <lombok.version>1.18.30</lombok.version>
+
+    <plugin.openapi.version>7.1.0</plugin.openapi.version>
+  </properties>
+
+  <dependencies>
+    <!-- MICRONAUT -->
+    <dependency>
+      <groupId>io.micronaut</groupId>
+      <artifactId>micronaut-jackson-databind</artifactId>
+    </dependency>
+
+    <!-- JACKSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jaxb-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-parameter-names</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- OPENAPI -->
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>openapi-generator</artifactId>
+      <version>${open.api.version}</version>
+      <exclusions>
+        <exclusion> <!--conflict with logback implementation from logback-classic-->
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.datatype</groupId>
+          <artifactId>jackson-datatype-joda</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>openapi-generator-maven-plugin</artifactId>
+      <version>${open.api.version}</version>
+    </dependency>
+
+    <!-- TEST -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.micronaut.maven</groupId>
+        <artifactId>micronaut-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <dependencies>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject-java</artifactId>
+            <version>${micronaut.core.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>${lombok.version}</version>
+            </path>
+            <path>
+              <groupId>io.micronaut</groupId>
+              <artifactId>micronaut-inject-java</artifactId>
+              <version>${micronaut.core.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <release>${release.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine} -Dfile.encoding=UTF-8</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${plugin.openapi.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>io.kokuwa.micronaut</groupId>
+            <artifactId>micronaut-openapi-codegen</artifactId>
+            <version>${openapi.codegen.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <configuration>
+              <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+              <output>${project.build.directory}</output>
+              <configOptions>
+                <sourceFolder>generated-sources/openapi</sourceFolder>
+              </configOptions>
+              <apiPackage>ru.tinkoff.tma.caen.api.controller</apiPackage>
+              <modelPackage>ru.tinkoff.tma.caen.api.model</modelPackage>
+              <ignoreFileOverride>${project.basedir}/.openapi-generator-ignore</ignoreFileOverride>
+              <strictSpec>false</strictSpec>
+              <typeMappings>
+                <typeMapping>localDate=java.time.LocalDate</typeMapping>
+                <typeMapping>instant=java.time.Instant</typeMapping>
+              </typeMappings>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <inputSpec>${project.basedir}/src/main/resources/openapi.yaml</inputSpec>
+          <generatorName>micronaut</generatorName>
+          <skipValidateSpec>false</skipValidateSpec>
+          <strictSpec>true</strictSpec>
+          <configOptions>
+            <dateLibrary>java8</dateLibrary>
+            <serializableModel>true</serializableModel>
+            <delegatePattern>true</delegatePattern>
+            <generateApis>true</generateApis>
+            <generateApiTests>false</generateApiTests>
+            <generateModels>true</generateModels>
+            <generateModelTests>false</generateModelTests>
+            <useTags>true</useTags>
+            <sourceFolder>src/main/java</sourceFolder>
+            <ignoreFileOverride>{project.basedir}</ignoreFileOverride>
+            <introspected>false</introspected>
+            <useOptional>false</useOptional>
+            <useBeanValidation>false</useBeanValidation>
+            <visitable>false</visitable>
+            <serdeable>false</serdeable>
+            <openApiNullable>true</openApiNullable>
+          </configOptions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
